@@ -21,8 +21,15 @@ game.state.add('play', {
 		game.input.keyboard.addCallbacks(null, null, this.onKeyUp, null);
 
 		// Initialize the map.
-		this.game.levelMap = [];
+		this.game.levelMap;
 		this.initializeMap();
+
+		this.game.player;
+		// Collection of all actors, the first of which is the player.
+		this.game.actorList;
+		this.game.livingEnemies;
+		// Each actor's position in the world.
+		this.game.actorMap;
 
 		// The display of the map with ASCII characters.
 		this.game.asciiDisplay = [];
@@ -34,6 +41,9 @@ game.state.add('play', {
 				newRow.push(this.initCell(this.game.levelMap[y][x], x, y));
 			}
 		}
+
+		this.initializeActors();
+		this.drawActors();
 		this.drawMap();
 	},
 
@@ -41,6 +51,7 @@ game.state.add('play', {
 	},
 
 	initializeMap: function () {
+		this.game.levelMap = [];
 		for (var y = 0; y < ROWS; y++) {
 			var newRow = [];
 			for (var x = 0; x < COLUMNS; x++) {
@@ -55,6 +66,7 @@ game.state.add('play', {
 	},
 
 	initCell: function (character, x, y) {
+		console.log('init cell with ' + character + ' at ' + x + '/' + y);
 		var style = { font: FONT + 'px monospace', fill: '#fff' };
 		return game.add.text(FONT * 0.6 * x, FONT * y, character, style);
 	},
@@ -64,6 +76,40 @@ game.state.add('play', {
 		for (var y = 0; y < ROWS; y++) {
 			for (var x = 0; x < COLUMNS; x++) {
 				this.game.asciiDisplay[y][x].content = this.game.levelMap[y][x];
+			}
+		}
+	},
+
+	initializeActors: function () {
+		this.game.actorList = [];
+		this.game.actorMap = [];
+
+		for (var e = 0; e < ACTORS; e++) {
+			// Create a new actor, with either 3 HP for the player, or 1 for an enemy.
+			var actor = { x: 0, y: 0, hp: e == 0 ? 3 : 1 };
+			// Find a spot for the actor that isn't a wall, and isn't already occupied.
+			do {
+				actor.y = Math.floor(Math.random() * ROWS);
+				actor.x = Math.floor(Math.random() * COLUMNS);
+			} while (this.game.levelMap[actor.y][actor.x] == '#' || this.game.actorMap[actor.y + '_' + actor.x] != null);
+
+			// Add the actor to the actor map and list.
+			this.game.actorMap[actor.y + '_' + actor.x] = actor;
+			this.game.actorList.push(actor);
+		}
+
+		this.game.player = this.game.actorList[0];
+		this.game.livingEnemies = ACTORS - 1;
+
+		console.log('actors: ' + this.game.actorList.length);
+		console.log('living enemies: ' + this.game.livingEnemies);
+	},
+
+	drawActors: function () {
+		for (var a in this.game.actorList) {
+			console.log('a drawing ' + a + ' at ' + this.game.actorList[a].y + 'x' + this.game.actorList[a].x);
+			if (this.game.actorList[a] != null && this.game.actorList[a].hp > 0) {
+				this.game.asciiDisplay[this.game.actorList[a].y][this.game.actorList[a].x].content = (a == 0 ? '' + this.game.player.hp : 'e');
 			}
 		}
 	},
