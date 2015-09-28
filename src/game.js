@@ -89,8 +89,8 @@ game.state.add('play', {
 			var actor = { x: 0, y: 0, hp: e == 0 ? 3 : 1 };
 			// Find a spot for the actor that isn't a wall, and isn't already occupied.
 			do {
-				actor.y = Math.floor(Math.random() * ROWS);
-				actor.x = Math.floor(Math.random() * COLUMNS);
+				actor.y = this.randomInt(ROWS);
+				actor.x = this.randomInt(COLUMNS);
 			} while (this.game.levelMap[actor.y][actor.x] == '#' || this.game.actorMap[actor.y + '_' + actor.x] != null);
 
 			// Add the actor to the actor map and list.
@@ -165,6 +165,46 @@ game.state.add('play', {
 		return true;
 	},
 
+	randomInt: function (max) {
+		return Math.floor(Math.random() * max);
+	},
+	
+	aiAct: function (actor) {
+		// TODO this was a copy/paste with 'this' and 'this.game' tweaks only. Own it.
+		var directions = [ { x: -1, y:0 }, { x:1, y:0 }, { x:0, y: -1 }, { x:0, y:1 } ];	
+		var dx = this.game.player.x - actor.x;
+		var dy = this.game.player.y - actor.y;
+	
+		// if player is far away, walk randomly
+		if (Math.abs(dx) + Math.abs(dy) > 6)
+			// try to walk in random directions until you succeed once
+			while (!this.moveTo(actor, directions[this.randomInt(directions.length)])) { };
+	
+		// otherwise walk towards player
+		if (Math.abs(dx) > Math.abs(dy)) {
+			if (dx < 0) {
+				// left
+				this.moveTo(actor, directions[0]);
+			} else {
+				// right
+				this.moveTo(actor, directions[1]);
+			}
+		} else {
+			if (dy < 0) {
+				// up
+				this.moveTo(actor, directions[2]);
+			} else {
+				// down
+				this.moveTo(actor, directions[3]);
+			}
+		}
+		if (this.game.player.hp < 1) {
+			// game over message
+			var gameOver = game.add.text(game.world.centerX, game.world.centerY, 'Game Over\nCtrl+r to restart', { fill : '#e22', align: "center" } );
+			gameOver.anchor.setTo(0.5,0.5);
+		}
+	},
+
 	onKeyUp: function (event) {
 		this.drawMap();
 
@@ -185,6 +225,20 @@ game.state.add('play', {
 			default:
 				break;
 		}
+
+		if (acted) {
+			for (var enemy in this.game.actorList) {
+				// Skip the player.
+				if (enemy == 0) {
+					continue;
+				}
+				var e = this.game.actorList[enemy];
+				if (e != null) {
+					this.aiAct(e);
+				}
+			}
+		}
+
 		this.drawActors();
 	}
 });
