@@ -20,9 +20,52 @@ game.state.add('play', {
 
 		game.input.keyboard.addCallbacks(null, null, this.onKeyUp, null);
 
+		// Initialize the map.
+		this.game.levelMap = [];
+		this.initializeMap();
+
+		// The display of the map with ASCII characters.
+		this.game.asciiDisplay = [];
+
+		for (var y = 0; y < ROWS; y++) {
+			var newRow = [];
+			this.game.asciiDisplay.push(newRow);
+			for (var x = 0; x < COLUMNS; x++) {
+				newRow.push(this.initCell(this.game.levelMap[y][x], x, y));
+			}
+		}
+		this.drawMap();
 	},
 
 	render: function () {
+	},
+
+	initializeMap: function () {
+		for (var y = 0; y < ROWS; y++) {
+			var newRow = [];
+			for (var x = 0; x < COLUMNS; x++) {
+				if (Math.random() > 0.8) {
+					newRow.push('#');
+				} else {
+					newRow.push('.');
+				}
+			}
+			this.game.levelMap.push(newRow);
+		}
+	},
+
+	initCell: function (character, x, y) {
+		var style = { font: FONT + 'px monospace', fill: '#fff' };
+		return game.add.text(FONT * 0.6 * x, FONT * y, character, style);
+	},
+
+	drawMap: function () {
+		console.log('drawing map');
+		for (var y = 0; y < ROWS; y++) {
+			for (var x = 0; x < COLUMNS; x++) {
+				this.game.asciiDisplay[y][x].content = this.game.levelMap[y][x];
+			}
+		}
 	},
 
 	onKeyUp: function (event) {
