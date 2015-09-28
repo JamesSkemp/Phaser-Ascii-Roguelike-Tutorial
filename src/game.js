@@ -107,7 +107,6 @@ game.state.add('play', {
 
 	drawActors: function () {
 		for (var a in this.game.actorList) {
-			console.log('a drawing ' + a + ' at ' + this.game.actorList[a].y + 'x' + this.game.actorList[a].x);
 			if (this.game.actorList[a] != null && this.game.actorList[a].hp > 0) {
 				this.game.asciiDisplay[this.game.actorList[a].y][this.game.actorList[a].x].content = (a == 0 ? '' + this.game.player.hp : 'e');
 				// TODO this should be taken care of by the logic to draw the map.
@@ -121,7 +120,7 @@ game.state.add('play', {
 			&& actor.x + dir.x <= COLUMNS - 1
 			&& actor.y + dir.y >= 0
 			&& actor.y + dir.y <= ROWS - 1
-			&& this.game.levelMap[actor.y + dir.y][actor.x + dir.y] == '.';
+			&& this.game.levelMap[actor.y + dir.y][actor.x + dir.x] == '.';
 	},
 
 	moveTo: function (actor, dir) {
@@ -143,9 +142,9 @@ game.state.add('play', {
 			if (victim.hp == 0) {
 				this.game.actorMap[newKey] = null;
 				this.game.actorList[this.game.actorList.indexOf(victim)] = null;
-				if (victim != player) {
-					livingEnemies--;
-					if (livingEnemies == 0) {
+				if (victim != this.game.player) {
+					this.game.livingEnemies--;
+					if (this.game.livingEnemies == 0) {
 						// victory message
 						var victory = game.add.text(game.world.centerX, game.world.centerY, 'Victory!\nCtrl+r to restart', { fill: '#2e2', align: "center" });
 						victory.anchor.setTo(0.5, 0.5);
