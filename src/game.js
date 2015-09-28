@@ -18,7 +18,7 @@ game.state.add('play', {
 	create: function () {
 		var state = this;
 
-		game.input.keyboard.addCallbacks(null, null, this.onKeyUp, null);
+		game.input.keyboard.addCallbacks(this, null, this.onKeyUp, null);
 
 		// Initialize the map.
 		this.game.levelMap;
@@ -116,25 +116,77 @@ game.state.add('play', {
 		}
 	},
 
-	onKeyUp: function (event) {
-		console.log(event);
+	canGo: function (actor, dir) {
+		return actor.x + dir.x >= 0
+			&& actor.x + dir.x <= COLUMNS - 1
+			&& actor.y + dir.y >= 0
+			&& actor.y + dir.y <= ROWS - 1
+			&& this.game.levelMap[actor.y + dir.y][actor.x + dir.y] == '.';
+	},
 
+	moveTo: function (actor, dir) {
+		// TODO this was a copy/paste with 'this' and 'this.game' tweaks only. Own it.
+		// check if actor can move in the given direction
+		if (!this.canGo(actor, dir)) {
+			return false;
+		}
+
+		// moves actor to the new location
+		var newKey = (actor.y + dir.y) + '_' + (actor.x + dir.x);
+		// if the destination tile has an actor in it 
+		if (this.game.actorMap[newKey] != null) {
+			//decrement hitpoints of the actor at the destination tile
+			var victim = this.game.actorMap[newKey];
+			victim.hp--;
+
+			// if it's dead remove its reference 
+			if (victim.hp == 0) {
+				this.game.actorMap[newKey] = null;
+				this.game.actorList[this.game.actorList.indexOf(victim)] = null;
+				if (victim != player) {
+					livingEnemies--;
+					if (livingEnemies == 0) {
+						// victory message
+						var victory = game.add.text(game.world.centerX, game.world.centerY, 'Victory!\nCtrl+r to restart', { fill: '#2e2', align: "center" });
+						victory.anchor.setTo(0.5, 0.5);
+					}
+				}
+			}
+		} else {
+			// remove reference to the actor's old position
+			this.game.actorMap[actor.y + '_' + actor.x] = null;
+
+			// update position
+			actor.y += dir.y;
+			actor.x += dir.x;
+
+			// add reference to the actor's new position
+			this.game.actorMap[actor.y + '_' + actor.x] = actor;
+		}
+		return true;
+	},
+
+	onKeyUp: function (event) {
+		this.drawMap();
+
+		var acted = false;
 		switch (event.keyCode) {
 			case Phaser.Keyboard.UP:
-				console.log('up');
+				acted = this.moveTo(this.game.player, { x: 0, y: -1 });
 				break;
 			case Phaser.Keyboard.DOWN:
-				console.log('down');
+				acted = this.moveTo(this.game.player, { x: 0, y: 1 });
 				break;
 			case Phaser.Keyboard.LEFT:
-				console.log('left');
+				acted = this.moveTo(this.game.player, { x: -1, y: 0 });
 				break;
 			case Phaser.Keyboard.RIGHT:
-				console.log('right');
+				acted = this.moveTo(this.game.player, { x: 1, y: 0 });
 				break;
 			default:
 				break;
 		}
+		this.drawActors();
 	}
 });
 
