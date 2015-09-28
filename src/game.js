@@ -110,6 +110,8 @@ game.state.add('play', {
 			console.log('a drawing ' + a + ' at ' + this.game.actorList[a].y + 'x' + this.game.actorList[a].x);
 			if (this.game.actorList[a] != null && this.game.actorList[a].hp > 0) {
 				this.game.asciiDisplay[this.game.actorList[a].y][this.game.actorList[a].x].content = (a == 0 ? '' + this.game.player.hp : 'e');
+				// TODO this should be taken care of by the logic to draw the map.
+				this.initCell((a == 0 ? '' + this.game.player.hp : 'e'), this.game.actorList[a].x, this.game.actorList[a].y);
 			}
 		}
 	},
