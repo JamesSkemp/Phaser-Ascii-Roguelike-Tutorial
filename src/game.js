@@ -20,7 +20,7 @@ game.state.add('play', {
 
 		game.input.keyboard.addCallbacks(this, null, this.onKeyUp, null);
 
-		// Initialize the map.
+		// Initialize the map of the walls and floor.
 		this.game.levelMap;
 		this.initializeMap();
 
@@ -45,9 +45,28 @@ game.state.add('play', {
 		this.initializeActors();
 		this.drawActors();
 		this.drawMap();
+
+		//this.renderMap();
 	},
 
 	render: function () {
+	},
+
+	renderMap: function () {
+		for (var y = 0; y < ROWS; y++) {
+			for (var x = 0; x < COLUMNS; x++) {
+				console.log(this.game.levelMap[y][x]);
+				console.log(this.game.asciiDisplay[y][x]);
+				if (this.game.levelMap[y][x] == '#') {
+					// This is a wall, render it as such.
+					this.initCell(this.game.levelMap[y][x], x, y);
+				} else if (this.game.asciiDisplay != '') {
+					this.initCell(this.game.asciiDisplay[y][x].content, x, y);
+				}
+
+
+			}
+		}
 	},
 
 	initializeMap: function () {
@@ -68,6 +87,9 @@ game.state.add('play', {
 	initCell: function (character, x, y) {
 		console.log('init cell with ' + character + ' at ' + x + '/' + y);
 		var style = { font: FONT + 'px monospace', fill: '#fff' };
+		if (character == '.') {
+			character = ' ';
+		}
 		return game.add.text(FONT * 0.6 * x, FONT * y, character, style);
 	},
 
